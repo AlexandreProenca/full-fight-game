@@ -124,8 +124,7 @@ ______     _ _  ______ _       _     _     _____
                           __/ |
                          |___/
 
-        """
-    )
+""")
 
 
 # Function to broadcast messages to all connected clients

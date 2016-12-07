@@ -47,7 +47,8 @@ if __name__ == "__main__":
     # Add server socket to the list of readable connections
     CONNECTION_LIST.append(server_socket)
 
-    logging.info("Server Started at port: {}".format(config.PORT))
+    logging.info("Server Started bind at:{} at port:{}".format(config.HOST, config.PORT))
+    print("Server Started bind at:{} at port:{}".format(config.HOST, config.PORT))
 
     while 1:
         # Get the list sockets which are ready to be read through select
@@ -60,5 +61,3 @@ if __name__ == "__main__":
                 CONNECTION_LIST.append(sockfd)
                 worker = Worker(addr, sockfd, login)
                 worker.start()
-
-    logging.info("Server Stopped at port: {}".format(config.PORT))
