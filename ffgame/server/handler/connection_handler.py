@@ -3,7 +3,7 @@
  Class to manage bussines requests
 """
 import logging
-from model.user import User
+from model.user import Char
 
 RECV_BUFFER = 4096
 
@@ -23,9 +23,9 @@ def login(addr, sockfd):
     option = 'n'
     # Handle the case in which there is a new connection recieved through server_socket
     logging.info("Client {} Connected".format(addr))
-    #cavera(sockfd)
+    cavera(sockfd)
     sockfd.send(Bcolors.OKBLUE)
-    #logo(sockfd)
+    logo(sockfd)
     sockfd.send(Bcolors.ENDC)
     while option == 'n':
         sockfd.send("Digite seu Nome e pressione Enter ou Crt-c para Sair\n")
@@ -34,7 +34,7 @@ def login(addr, sockfd):
         op = sockfd.recv(RECV_BUFFER)[:-2]
         if op == 's':
             option = op
-    User.open(email, sockfd)
+    Char.open(email, sockfd)
     online_users(sockfd)
     main_menu(sockfd)
 
@@ -65,9 +65,9 @@ def main_menu(sockfd):
 def online_users(sockfd):
     sockfd.send("************************ " +Bcolors.OKGREEN+"USERS"+Bcolors.ENDC+" ***************************\n")
     sockfd.send(Bcolors.OKGREEN)
-    for u in User.users:
-        sockfd.send('Player:{}\n'.format(u))
-    sockfd.send('Total:{}\n'.format(len(User.users)))
+    for u in Char.players:
+        sockfd.send('Player:{}\n'.format(u['player']))
+    sockfd.send('Total:{}\n'.format(len(Char.players)))
     sockfd.send(Bcolors.ENDC)
     sockfd.send("**********************************************************\n")
     main_menu(sockfd)

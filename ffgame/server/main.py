@@ -47,13 +47,12 @@ if __name__ == "__main__":
     # Add server socket to the list of readable connections
     CONNECTION_LIST.append(server_socket)
 
-    logging.info("Server Started bind:{} port:{}".format(config.HOST, config.PORT))
+    logging.info("Server Started bind:{} at port:{}".format(config.HOST, config.PORT))
     print("Server Started bind:{} port:{}".format(config.HOST, config.PORT))
 
     while 1:
         # Get the list sockets which are ready to be read through select
         read_sockets, write_sockets, error_sockets = select.select(CONNECTION_LIST, [], [])
-        option = 'n'
         for sock in read_sockets:
             # New connection
             if sock == server_socket:
