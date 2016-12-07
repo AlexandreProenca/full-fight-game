@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Classe para lidar com as conexoes dos clientes
+ Class to manage bussines requests
 """
-import time
-import json
 import logging
 from model.user import User
 
@@ -21,14 +19,10 @@ class Bcolors:
     UNDERLINE = '\033[4m'
 
 
-def agora():
-    return time.ctime(time.time())
-
-
 def login(addr, sockfd):
     option = 'n'
     # Handle the case in which there is a new connection recieved through server_socket
-    print "Client (%s, %s) connected" % addr
+    logging.info("Client {} Connected".format(addr))
     cavera(sockfd)
     sockfd.send(Bcolors.OKBLUE)
     logo(sockfd)
@@ -36,7 +30,7 @@ def login(addr, sockfd):
     while option == 'n':
         sockfd.send("Digite seu Email e pressione Enter ou Crt-c para Sair\n")
         email = sockfd.recv(RECV_BUFFER)[:-2]
-        sockfd.send(Bcolors.FAIL+"E-mail: {}\nConfirma? s/n?\n".format(email)+Bcolors.ENDC)
+        sockfd.send(Bcolors.FAIL+"E-mail: {}\nConfirma? s/n? ".format(email)+Bcolors.ENDC)
         op = sockfd.recv(RECV_BUFFER)[:-2]
         if op == 's':
             option = op

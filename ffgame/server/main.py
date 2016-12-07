@@ -1,12 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Lado do Servidor: Abre um TCP/IP numa port, espera por uma menssagem
-de um cliente, e manda essa mensagem de volta como resposta.
-Usamos aqui a biblioteca socketserver para realizar este trabalho.
-Esta biblioteca fornece TCPServer, ThreadingTCPServer, ForkingTCPServer,
-UDP variações destes, entre outras coisas, e redireciona cada cliente
-para um 'request handler' para utilizar se método 'handle' para lidar
-com o requisito do cliente.
+ This is a simple socket server to development of the Full Fight Game (FFG), just receive datagram via socket and start
+ a worker to handle this socket request, this server accept simultaneous connections, to play just telnet address-server
+ port 5000, feel free to contribute to this adventure =)
 """
 import logging
 import os
@@ -26,13 +22,17 @@ logging.basicConfig(format='[%(asctime)s] - %(message)s',
 
 
 class Worker(threading.Thread):
-    def __init__(self, addr, sockfd):
+    """
+    Just run callback method
+    """
+    def __init__(self, _addr, _sockfd, _callback):
         threading.Thread.__init__(self)
-        self.addr = addr
-        self.sockfd = sockfd
+        self.addr = _addr
+        self.sockfd = _sockfd
+        self.callback = _callback
 
     def run(self):
-        login(self.addr, self.sockfd)
+        self.callback(self.addr, self.sockfd)
 
 
 if __name__ == "__main__":
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     # Add server socket to the list of readable connections
     CONNECTION_LIST.append(server_socket)
 
-    print "Server Started at port: {}".format(config.PORT)
+    logging.info("Server Started at port: {}".format(config.PORT))
 
     while 1:
         # Get the list sockets which are ready to be read through select
@@ -58,5 +58,7 @@ if __name__ == "__main__":
             if sock == server_socket:
                 sockfd, addr = server_socket.accept()
                 CONNECTION_LIST.append(sockfd)
-                worker = Worker(addr, sockfd)
+                worker = Worker(addr, sockfd, login)
                 worker.start()
+
+    logging.info("Server Stopped at port: {}".format(config.PORT))
