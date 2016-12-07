@@ -47,8 +47,8 @@ if __name__ == "__main__":
     # Add server socket to the list of readable connections
     CONNECTION_LIST.append(server_socket)
 
-    logging.info("Server Started bind at:{} at port:{}".format(config.HOST, config.PORT))
-    print("Server Started bind at:{} at port:{}".format(config.HOST, config.PORT))
+    logging.info("Server Started bind:{} port:{}".format(config.HOST, config.PORT))
+    print("Server Started bind:{} port:{}".format(config.HOST, config.PORT))
 
     while 1:
         # Get the list sockets which are ready to be read through select

@@ -23,14 +23,14 @@ def login(addr, sockfd):
     option = 'n'
     # Handle the case in which there is a new connection recieved through server_socket
     logging.info("Client {} Connected".format(addr))
-    cavera(sockfd)
+    #cavera(sockfd)
     sockfd.send(Bcolors.OKBLUE)
-    logo(sockfd)
+    #logo(sockfd)
     sockfd.send(Bcolors.ENDC)
     while option == 'n':
-        sockfd.send("Digite seu Email e pressione Enter ou Crt-c para Sair\n")
+        sockfd.send("Digite seu Nome e pressione Enter ou Crt-c para Sair\n")
         email = sockfd.recv(RECV_BUFFER)[:-2]
-        sockfd.send(Bcolors.FAIL+"E-mail: {}\nConfirma? s/n? ".format(email)+Bcolors.ENDC)
+        sockfd.send("Nome:"+Bcolors.FAIL+" {}\nConfirma? s/n? ".format(email)+Bcolors.ENDC)
         op = sockfd.recv(RECV_BUFFER)[:-2]
         if op == 's':
             option = op
@@ -40,6 +40,7 @@ def login(addr, sockfd):
 
 
 def main_menu(sockfd):
+    op = 5
     sockfd.send("************************* "+Bcolors.FAIL+"MENU"+Bcolors.ENDC+" ***************************\n")
     sockfd.send(Bcolors.FAIL)
     sockfd.send("Escolher Char------------------------------------------(1)\n")
@@ -49,11 +50,16 @@ def main_menu(sockfd):
     sockfd.send("Ver quem esta online-----------------------------------(4)\n")
     sockfd.send(Bcolors.ENDC)
     sockfd.send("**********************************************************\n")
-    menu = sockfd.recv(RECV_BUFFER)[:-2]
-    if int(menu) == 1:
-         choose_char(sockfd)
-    if int(menu) == 4:
-         online_users(sockfd)
+    while op >= 5:
+        menu = sockfd.recv(RECV_BUFFER)[:-2]
+        if menu != '' and int(menu) < 5:
+            op = int(menu)
+            if op == 1:
+                choose_char(sockfd)
+            if op == 4:
+                online_users(sockfd)
+        else:
+            sockfd.send(Bcolors.FAIL+"Invalid Option\n"+Bcolors.ENDC)
 
 
 def online_users(sockfd):
@@ -61,13 +67,14 @@ def online_users(sockfd):
     sockfd.send(Bcolors.OKGREEN)
     for u in User.users:
         sockfd.send('Player:{}\n'.format(u))
-    sockfd.send('Total Users:{}\n'.format(len(User.users)))
+    sockfd.send('Total:{}\n'.format(len(User.users)))
     sockfd.send(Bcolors.ENDC)
     sockfd.send("**********************************************************\n")
     main_menu(sockfd)
 
 
 def choose_char(sockfd):
+    op = 7
     sockfd.send("**********************"+Bcolors.OKBLUE+" MONTE SEU CHAR "+Bcolors.ENDC+"********************\n")
     sockfd.send(Bcolors.OKBLUE)
     sockfd.send("Escolher Nome------------------------------------------(1)\n")
@@ -80,9 +87,16 @@ def choose_char(sockfd):
     sockfd.send("Menu Principal-----------------------------------------(6)\n")
     sockfd.send(Bcolors.ENDC)
     sockfd.send("**********************************************************\n")
-    op = sockfd.recv(RECV_BUFFER)[:-2]
-    if int(op) == 5:
-        main_menu(sockfd)
+    while op >= 7:
+        menu = sockfd.recv(RECV_BUFFER)[:-2]
+        if menu != '' and int(menu) < 7:
+            op = int(menu)
+            if op == 1:
+                choose_char(sockfd)
+            if op == 6:
+                main_menu(sockfd)
+        else:
+            sockfd.send(Bcolors.FAIL+"Invalid Option\n"+Bcolors.ENDC)
 
 
 def cavera(sockfd):
