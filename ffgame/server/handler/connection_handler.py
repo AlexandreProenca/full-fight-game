@@ -35,11 +35,11 @@ def login(addr, sockfd):
         if op == 's':
             option = op
     Char.open(email, sockfd)
-    online_users(sockfd)
-    main_menu(sockfd)
+    online_users(sockfd, email)
+    main_menu(sockfd, email)
 
 
-def main_menu(sockfd):
+def main_menu(sockfd, perfil_name):
     op = 5
     sockfd.send("************************* "+Bcolors.FAIL+"MENU"+Bcolors.ENDC+" ***************************\n")
     sockfd.send(Bcolors.FAIL)
@@ -50,30 +50,56 @@ def main_menu(sockfd):
     sockfd.send("Ver quem esta online-----------------------------------(4)\n")
     sockfd.send(Bcolors.ENDC)
     sockfd.send("**********************************************************\n")
+
     while op >= 5:
         menu = sockfd.recv(RECV_BUFFER)[:-2]
+        try:
+            int(menu)
+        except ValueError:
+            sockfd.send(Bcolors.FAIL+"Invalid Option\n"+Bcolors.ENDC)
+            main_menu(sockfd, perfil_name)
+            break
         if menu != '' and int(menu) < 5:
             op = int(menu)
             if op == 1:
-                choose_char(sockfd)
+                choose_char(sockfd, perfil_name)
             if op == 4:
-                online_users(sockfd)
+                online_users(sockfd, perfil_name)
         else:
             sockfd.send(Bcolors.FAIL+"Invalid Option\n"+Bcolors.ENDC)
 
 
-def online_users(sockfd):
+def online_users(sockfd, perfil_name):
     sockfd.send("************************ " +Bcolors.OKGREEN+"USERS"+Bcolors.ENDC+" ***************************\n")
     sockfd.send(Bcolors.OKGREEN)
     for u in Char.players:
         sockfd.send('Player:{}\n'.format(u['player']))
     sockfd.send('Total:{}\n'.format(len(Char.players)))
     sockfd.send(Bcolors.ENDC)
-    sockfd.send("**********************************************************\n")
-    main_menu(sockfd)
+    main_menu(sockfd, perfil_name)
 
 
-def choose_char(sockfd):
+def char_status(sockfd, perfil_name):
+    sockfd.send("************************ " +Bcolors.OKGREEN+"CHAR POINTS"+Bcolors.ENDC+" ***************************\n")
+    sockfd.send(Bcolors.OKGREEN)
+    char = Char.find_player_by_perfil_name(perfil_name)
+    sockfd.send("Perfil Name *******************************************({})\n".format(char.perfil_name))
+    sockfd.send("Char Name *********************************************({})\n".format(char.char_name))
+    sockfd.send("Char Points *******************************************({})\n".format(char.classe_points))
+    sockfd.send("Classe ************************************************({})\n".format(char.classe))
+    sockfd.send("Fisical Attack ****************************************({})\n".format(char.f_attack))
+    sockfd.send("Fisical Defence ***************************************({})\n".format(char.f_def))
+    sockfd.send("Magical Attack ****************************************({})\n".format(char.m_attack))
+    sockfd.send("Magical Defence ***************************************({})\n".format(char.m_def))
+    sockfd.send("Healling Points ***************************************({})\n".format(char.hp))
+    sockfd.send("Mana Points *******************************************({})\n".format(char.mp))
+    sockfd.send("Armor *************************************************({})\n".format(char.armor))
+    sockfd.send("Weapon ************************************************({})\n".format(char.weapon))
+    sockfd.send(Bcolors.ENDC)
+    main_menu(sockfd, perfil_name)
+
+
+def choose_char(sockfd, perfil_name):
     op = 7
     sockfd.send("**********************"+Bcolors.OKBLUE+" MONTE SEU CHAR "+Bcolors.ENDC+"********************\n")
     sockfd.send(Bcolors.OKBLUE)
@@ -92,9 +118,14 @@ def choose_char(sockfd):
         if menu != '' and int(menu) < 7:
             op = int(menu)
             if op == 1:
-                choose_char(sockfd)
+                choose_char(sockfd, perfil_name)
+                break
             if op == 6:
-                main_menu(sockfd)
+                main_menu(sockfd, perfil_name)
+                break
+            if op == 4:
+                char_status(sockfd, perfil_name)
+
         else:
             sockfd.send(Bcolors.FAIL+"Invalid Option\n"+Bcolors.ENDC)
 

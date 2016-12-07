@@ -41,8 +41,8 @@ class Char:
 
     @classmethod
     def find_player_by_perfil_name(cls, perfil_name):
-        return [p['char'] for p in cls.players if p['player'] == perfil_name]
+        return [p['char'] for p in cls.players if p['player'] == perfil_name][0]
 
     @classmethod
     def find_conn_by_perfil_name(cls, perfil_name):
-        return [p['conn'] for p in cls.players if p['player'] == perfil_name]
+        return [p['conn'] for p in cls.players if p['player'] == perfil_name][0]
