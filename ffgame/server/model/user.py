@@ -38,8 +38,9 @@ class Char:
     def close(cls, perfil_name, conn):
         for u in cls.players:
             if u['player'] == perfil_name:
-                #conn.close()
+                #u['conn'].close()
                 cls.players.remove(u)
+                print 'Connected Users (-)'+str(len(Char.players))+' Player Logout: '+perfil_name
                 logging.info("Player Logout: {}".format(perfil_name))
                 break
 
@@ -51,4 +52,6 @@ class Char:
     def find_conn_by_perfil_name(cls, perfil_name):
         return [p['conn'] for p in cls.players if p['player'] == perfil_name][0]
 
-
+    @classmethod
+    def find_player_by_conn(cls, sock):
+        return [p['player'] for p in cls.players if p['conn'] == sock][0]
