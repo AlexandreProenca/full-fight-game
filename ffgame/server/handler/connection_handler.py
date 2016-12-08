@@ -40,33 +40,40 @@ def login(addr, sockfd):
 
 
 def main_menu(sockfd, perfil_name):
-    op = 5
+    op = 4
     sockfd.send("************************* "+Bcolors.FAIL+"MENU"+Bcolors.ENDC+" ***************************\n")
     sockfd.send(Bcolors.FAIL)
-    sockfd.send("Escolher Char------------------------------------------(1)\n")
-    sockfd.send("Chat---------------------------------------------------(2)\n")
-    sockfd.send("Sair---------------------------------------------------(3)\n")
+    sockfd.send("Criar Personagem---------------------------------------(1)\n")
     sockfd.send(Bcolors.OKGREEN)
-    sockfd.send("Ver quem esta online-----------------------------------(4)\n")
+    sockfd.send("Ver quem esta online-----------------------------------(2)\n")
+    sockfd.send(Bcolors.WARNING)
+    sockfd.send("Sair---------------------------------------------------(3)\n")
     sockfd.send(Bcolors.ENDC)
     sockfd.send("**********************************************************\n")
 
-    while op >= 5:
+    while op >= 4:
         menu = sockfd.recv(RECV_BUFFER)[:-2]
         try:
             int(menu)
         except ValueError:
             sockfd.send(Bcolors.FAIL+"Invalid Option\n"+Bcolors.ENDC)
-            main_menu(sockfd, perfil_name)
+            #main_menu(sockfd, perfil_name)
             break
-        if menu != '' and int(menu) < 5:
+        if menu != '' and int(menu) < op:
             op = int(menu)
             if op == 1:
                 choose_char(sockfd, perfil_name)
-            if op == 4:
+            if op == 2:
                 online_users(sockfd, perfil_name)
+            if op == 3:
+                sockfd.send(Bcolors.WARNING + "Valeu por jogar, volte sempre =)\n"
+                                              "Pressione Ctrl+] depois digite quit para sair do telnet\n" + Bcolors.ENDC)
+                Char.close(perfil_name, sockfd)
+                break
+
         else:
             sockfd.send(Bcolors.FAIL+"Invalid Option\n"+Bcolors.ENDC)
+            main_menu(sockfd, perfil_name)
 
 
 def online_users(sockfd, perfil_name):

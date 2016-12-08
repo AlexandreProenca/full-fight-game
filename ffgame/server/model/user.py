@@ -31,13 +31,17 @@ class Char:
     def open(cls, perfil_name, conn):
         char = Char(perfil_name)
         cls.players.append({"player": perfil_name, "char": char, "conn": conn})
-        print cls.players
         logging.info('Player Login: {}'.format(perfil_name))
         print 'Connected Users (+)'+str(len(Char.players))+' Last Player: '+perfil_name
 
     @classmethod
-    def close(cls, user):
-       pass
+    def close(cls, perfil_name, conn):
+        for u in cls.players:
+            if u['player'] == perfil_name:
+                #conn.close()
+                cls.players.remove(u)
+                logging.info("Player Logout: {}".format(perfil_name))
+                break
 
     @classmethod
     def find_player_by_perfil_name(cls, perfil_name):
@@ -46,3 +50,5 @@ class Char:
     @classmethod
     def find_conn_by_perfil_name(cls, perfil_name):
         return [p['conn'] for p in cls.players if p['player'] == perfil_name][0]
+
+

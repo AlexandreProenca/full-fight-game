@@ -53,6 +53,7 @@ if __name__ == "__main__":
     while 1:
         # Get the list sockets which are ready to be read through select
         read_sockets, write_sockets, error_sockets = select.select(CONNECTION_LIST, [], [])
+
         for sock in read_sockets:
             # New connection
             if sock == server_socket:
