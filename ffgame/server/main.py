@@ -11,6 +11,7 @@ import select
 from handler.connection_handler import login
 import config
 import threading
+from model.user import Char
 
 LOG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs/server.log')
 
@@ -59,5 +60,29 @@ if __name__ == "__main__":
             if sock == server_socket:
                 sockfd, addr = server_socket.accept()
                 CONNECTION_LIST.append(sockfd)
-                worker = Worker(addr, sockfd, login)
-                worker.start()
+
+                try:
+                    worker = Worker(addr, sockfd, login)
+                    worker.start()
+                except Exception:
+                    pass
+            else:
+                try:
+                    data = sock.recv(1024)
+                except Exception as e:
+                    print("Execption DATA", e)
+                    data = 0
+
+                if data:
+                    print("DATA", data)  # Would append device to "devices" dictionary
+                else:
+                    sockfd.close()
+                    CONNECTION_LIST.remove(sockfd)
+                    try:
+                        player = Char.find_player_by_conn(sockfd)
+                        Char.close(player, sockfd)
+                    except IndexError:
+                        pass
+
+                    logging.info("Client Close connection by quit addr: {} socket:{}".format(addr, sockfd))
+                    print("Closed {}".format(sockfd))

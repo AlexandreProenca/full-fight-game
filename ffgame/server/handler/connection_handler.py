@@ -63,8 +63,12 @@ def main_menu(sockfd, perfil_name):
                 break
 
         else:
-            sockfd.send(Bcolors.FAIL+"Invalid Option\n"+Bcolors.ENDC)
-            main_menu(sockfd, perfil_name)
+            try:
+                sockfd.send(Bcolors.FAIL+"Invalid Option\n"+Bcolors.ENDC)
+                main_menu(sockfd, perfil_name)
+            except Exception:
+                break
+                pass
 
 
 def online_users(sockfd, perfil_name):
