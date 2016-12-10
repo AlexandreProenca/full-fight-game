@@ -3,20 +3,11 @@
  Class to manage bussines requests
 """
 import logging
+import random
+from utils.colors import Bcolors
 from model.user import Char
 
 RECV_BUFFER = 4096
-
-
-class Bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
 
 
 def login(addr, sockfd):
@@ -177,6 +168,48 @@ ______     _ _  ______ _       _     _     _____
                          |___/
 
 """)
+
+
+def chance(probability):
+    return random.randrange(100) < probability
+
+
+def critical(probability):
+    return random.randrange(100) < probability
+
+
+def hit_pvp(p1, p2):
+    if chance(90 - p1.agility):
+        if critical(10 + p2.rage):
+            p1.hit(p2.patk, p2.name, 3)
+            if p1.is_dead():
+                print(Bcolors.FAIL + "VENCEDOR: {} HP:({})".format(p2.name, p2.hp) +Bcolors.ENDC)
+                return True
+        else:
+            p1.hit(p2.patk, p2.name)
+            if p1.is_dead():
+                print(Bcolors.FAIL + "VENCEDOR: {} HP:({})".format(p2.name, p2.hp) + Bcolors.ENDC)
+                return True
+    else:
+        print(Bcolors.FAIL + "{} ERRRRRROOOUUU!!!".format(p2.name) + Bcolors.ENDC)
+
+
+def start_fight(p1, p2):
+    print("********************************************** INICIO *********************************************")
+    print Bcolors.OKBLUE + p1.status()
+    print Bcolors.OKGREEN + p2.status() + Bcolors.ENDC
+
+    for i in range(1, 100):
+        next = raw_input()
+        if next == 'n':
+            print("********************************************* Jogada {} *********************************************".format(i))
+            players = [p1, p2]
+            if hit_pvp(p2, p1): break
+            if hit_pvp(p1, p2): break
+            print(100 * "*")
+            print Bcolors.OKBLUE + p1.status()
+            print Bcolors.OKGREEN + p2.status() + Bcolors.ENDC
+
 
 
 # Function to broadcast messages to all connected clients
