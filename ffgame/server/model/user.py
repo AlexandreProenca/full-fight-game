@@ -20,6 +20,7 @@ class Char:
         self.agility = 0
         self.rage = 0
         self.ready = False
+        self.char_points = 150
 
     @classmethod
     def open(cls, perfil, conn):
@@ -32,7 +33,7 @@ class Char:
     def close(cls, perfil, conn):
         for u in cls.players:
             if u['player'] == perfil:
-                conn.close()
+                #conn.close()
                 cls.players.remove(u)
                 logging.info("Player Logout: {}".format(perfil))
                 break
@@ -44,6 +45,10 @@ class Char:
     @classmethod
     def find_conn_by_perfil_name(cls, perfil_name):
         return [p['conn'] for p in cls.players if p['player'] == perfil_name][0]
+
+    @classmethod
+    def find_player_by_conn(cls, conn):
+        return [p for p in cls.players if p['conn'] == conn][0]
 
     def hit(self, patk, name, crit=None):
         if crit:

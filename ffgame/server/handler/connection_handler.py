@@ -2,12 +2,17 @@
 """
  Class to manage bussines requests
 """
+import json
 import logging
 import random
+
+import time
 from utils.colors import Bcolors
 from model.user import Char
 
 RECV_BUFFER = 4096
+MARGEM = (58*"*")
+LINHA = (116*"*"+"\n")
 
 
 def login(addr, sockfd):
@@ -31,16 +36,17 @@ def login(addr, sockfd):
 
 
 def main_menu(sockfd, perfil_name):
+    TITULO = " MENU "
     op = 4
-    sockfd.send("************************* "+Bcolors.FAIL+"MENU"+Bcolors.ENDC+" ***************************\n")
+    sockfd.send(MARGEM+Bcolors.OKBLUE+TITULO+Bcolors.ENDC+(MARGEM[:-len(TITULO)])+"\n")
     sockfd.send(Bcolors.FAIL)
-    sockfd.send("Criar Personagem---------------------------------------(1)\n")
+    sockfd.send("(1)PERSONAGEM -----------------------------------------------------------------------------------------------------)\n")
     sockfd.send(Bcolors.OKGREEN)
-    sockfd.send("Ver quem esta online-----------------------------------(2)\n")
+    sockfd.send("(2)ON-LINE USERS --------------------------------------------------------------------------------------------------)\n")
     sockfd.send(Bcolors.WARNING)
-    sockfd.send("Sair---------------------------------------------------(3)\n")
+    sockfd.send("(3)SAIR -----------------------------------------------------------------------------------------------------------)\n")
     sockfd.send(Bcolors.ENDC)
-    sockfd.send("**********************************************************\n")
+    sockfd.send(LINHA)
 
     while op >= 4:
         menu = sockfd.recv(RECV_BUFFER)[:-2]
@@ -48,12 +54,11 @@ def main_menu(sockfd, perfil_name):
             int(menu)
         except ValueError:
             sockfd.send(Bcolors.FAIL+"Invalid Option\n"+Bcolors.ENDC)
-            #main_menu(sockfd, perfil_name)
-            break
+            pass
         if menu != '' and int(menu) < op:
             op = int(menu)
             if op == 1:
-                choose_char(sockfd, perfil_name)
+                new_char(sockfd, perfil_name)
             if op == 2:
                 online_users(sockfd, perfil_name)
             if op == 3:
@@ -65,14 +70,13 @@ def main_menu(sockfd, perfil_name):
         else:
             try:
                 sockfd.send(Bcolors.FAIL+"Invalid Option\n"+Bcolors.ENDC)
-                main_menu(sockfd, perfil_name)
             except Exception:
-                break
                 pass
 
 
 def online_users(sockfd, perfil_name):
-    sockfd.send("************************ " +Bcolors.OKGREEN+"USERS"+Bcolors.ENDC+" ***************************\n")
+    TITULO = " USERS "
+    sockfd.send(MARGEM + Bcolors.OKBLUE + TITULO + Bcolors.ENDC + (MARGEM[:-len(TITULO)]) + "\n")
     sockfd.send(Bcolors.OKGREEN)
     for u in Char.players:
         sockfd.send('Player:{}\n'.format(u['player']))
@@ -82,54 +86,156 @@ def online_users(sockfd, perfil_name):
 
 
 def char_status(sockfd, perfil_name):
-    sockfd.send("************************ " +Bcolors.OKGREEN+"CHAR POINTS"+Bcolors.ENDC+" ***************************\n")
+    TITULO = " CHAR POINTS "
+    sockfd.send(MARGEM + Bcolors.OKBLUE + TITULO + Bcolors.ENDC + (MARGEM[:-len(TITULO)]) + "\n")
     sockfd.send(Bcolors.OKGREEN)
     char = Char.find_player_by_perfil_name(perfil_name)
-    sockfd.send("Perfil Name *******************************************({})\n".format(char.perfil_name))
-    sockfd.send("Char Name *********************************************({})\n".format(char.char_name))
-    sockfd.send("Char Points *******************************************({})\n".format(char.classe_points))
-    sockfd.send("Classe ************************************************({})\n".format(char.classe))
-    sockfd.send("Fisical Attack ****************************************({})\n".format(char.f_attack))
-    sockfd.send("Fisical Defence ***************************************({})\n".format(char.f_def))
-    sockfd.send("Magical Attack ****************************************({})\n".format(char.m_attack))
-    sockfd.send("Magical Defence ***************************************({})\n".format(char.m_def))
-    sockfd.send("Healling Points ***************************************({})\n".format(char.hp))
-    sockfd.send("Mana Points *******************************************({})\n".format(char.mp))
-    sockfd.send("Armor *************************************************({})\n".format(char.armor))
-    sockfd.send("Weapon ************************************************({})\n".format(char.weapon))
+    sockfd.send("Perfil     :{}\n".format(char.perfil))
+    sockfd.send("(1)Nome       :{}\n".format(char.name))
+    sockfd.send("(2)Força      {}:[".format(char.patk) + char.patk*'I'+"]\n")
+    sockfd.send("(3)Defesa     {}:[".format(char.pdef) + char.pdef*'I'+"]\n")
+    sockfd.send("(4)Agilidade  0{}:[".format(char.agility) + char.agility*'I'+"]\n")
+    sockfd.send("(5)Raiva      0{}:[".format(char.rage) + char.rage*'I'+"]\n")
+    sockfd.send("(6)Vitalidade {}:[".format(char.hp) + char.hp*'I'+"]\n")
+    sockfd.send(Bcolors.WARNING)
+    sockfd.send("Char poins ({})".format(char.char_points) + char.char_points*'i'+")\n")
     sockfd.send(Bcolors.ENDC)
-    main_menu(sockfd, perfil_name)
+    new_char(sockfd, perfil_name)
 
 
-def choose_char(sockfd, perfil_name):
-    op = 7
-    sockfd.send("**********************"+Bcolors.OKBLUE+" MONTE SEU CHAR "+Bcolors.ENDC+"********************\n")
-    sockfd.send(Bcolors.OKBLUE)
-    sockfd.send("Escolher Nome------------------------------------------(1)\n")
-    sockfd.send("Escolher Classe----------------------------------------(2)\n")
-    sockfd.send("Distribuir pontos--------------------------------------(3)\n")
-    sockfd.send("Consultar Status---------------------------------------(4)\n")
-    sockfd.send("Consultar Inventario-----------------------------------(5)\n")
-    sockfd.send(Bcolors.OKBLUE)
-    sockfd.send(Bcolors.FAIL)
-    sockfd.send("Menu Principal-----------------------------------------(6)\n")
-    sockfd.send(Bcolors.ENDC)
-    sockfd.send("**********************************************************\n")
-    while op >= 7:
-        menu = sockfd.recv(RECV_BUFFER)[:-2]
-        if menu != '' and int(menu) < 7:
-            op = int(menu)
-            if op == 1:
-                choose_char(sockfd, perfil_name)
+def char(sockfd, perfil_name):
+
+    while True:
+        TITULO = " PERSONAGEM "
+        sockfd.send(MARGEM + Bcolors.OKBLUE + TITULO + Bcolors.ENDC + (MARGEM[:-len(TITULO)]) + "\n")
+        sockfd.send(Bcolors.OKGREEN)
+        sockfd.send("NOVO PERSONAGEN ***************************************(1)\n")
+        sockfd.send("ESCOLHER JA CRAIDO ************************************(2)\n")
+        sockfd.send("VOLTAR ************************************************(3)\n")
+        sockfd.send(Bcolors.ENDC)
+
+        op = int(sockfd.recv(RECV_BUFFER)[:-2])
+
+        if op == 1:
+            new_char(sockfd, perfil_name)
+            break
+        elif op == 2:
+            sockfd.send("EM BREVE ...\n")
+        elif op == 3:
+            main_menu(sockfd, perfil_name)
+            break
+
+
+def set_name(sockfd, perfil_name):
+    while True:
+        sockfd.send("Digite o nome do seu personagem, use no maximo 50 letras, nao use espaços eu characters especiais\n")
+        try:
+            name = sockfd.recv(RECV_BUFFER)[:-2]
+            char = Char.find_player_by_perfil_name(perfil_name)
+            char.name = name
+            break
+        except Exception as e:
+            sockfd.send("invalido {}\n".format(e))
+            pass
+
+    new_char(sockfd, perfil_name)
+
+
+def set_attr(sockfd, perfil_name, maximo, atributo):
+    while True:
+        sockfd.send("Digite o valor para a "'\033[92m'" {} "'\033[0m'" do seu personagem  MAX = {}\n".format(atributo, maximo))
+        point = int(sockfd.recv(RECV_BUFFER)[:-2])
+        if point <= maximo:
+            char = Char.find_player_by_perfil_name(perfil_name)
+            if char.char_points >= point:
+                char.char_points = (char.char_points - point)
+                setattr(char, atributo, point)
                 break
-            if op == 6:
-                main_menu(sockfd, perfil_name)
-                break
-            if op == 4:
-                char_status(sockfd, perfil_name)
 
+            else:
+                sockfd.send("Pontos insuficientes {}\n".format(char.char_points))
         else:
-            sockfd.send(Bcolors.FAIL+"Invalid Option\n"+Bcolors.ENDC)
+            sockfd.send("Maximo permitido {}\n".format(maximo))
+    new_char(sockfd, perfil_name)
+
+
+def new_char(sockfd, perfil_name):
+    char = Char.find_player_by_perfil_name(perfil_name)
+    TITULO = " NOVO PERSONAGEM "
+    sockfd.send(MARGEM + Bcolors.OKBLUE + TITULO + Bcolors.ENDC + (MARGEM[:-len(TITULO)]) + "\n")
+    sockfd.send("Voce tem "'\033[92m'"{} "'\033[0m'"pontos para distribuir entre os atributos do seu personagem, \n \
+    fique atento ao valor maximo de cada atributo\n".format(char.char_points))
+    sockfd.send(Bcolors.WARNING)
+    sockfd.send("Perfil        :{}\n".format(char.perfil))
+    sockfd.send("(1)Nome       :"'\033[91m'"{}\n".format(char.name))
+    sockfd.send(Bcolors.WARNING)
+    sockfd.send("(2)Força      {}:["'\033[92m'"".format(char.patk) + char.patk * 'I' + Bcolors.WARNING+"]\n")
+    sockfd.send(Bcolors.WARNING)
+    sockfd.send("(3)Defesa     {}:["'\033[92m'"".format(char.pdef) + char.pdef * 'I' + Bcolors.WARNING+"]\n")
+    sockfd.send(Bcolors.WARNING)
+    sockfd.send("(4)Agilidade  0{}:["'\033[92m'"".format(char.agility) + char.agility * 'I' + Bcolors.WARNING+"]\n")
+    sockfd.send(Bcolors.WARNING)
+    sockfd.send("(5)Raiva      0{}:["'\033[92m'"".format(char.rage) + char.rage * 'I' + Bcolors.WARNING+"]\n")
+    sockfd.send(Bcolors.WARNING)
+    sockfd.send("(6)Vitalidade {}:["'\033[92m'"".format(char.hp) + char.hp * 'I' + Bcolors.WARNING+"]\n")
+    sockfd.send(Bcolors.ENDC)
+    sockfd.send(LINHA)
+    sockfd.send(Bcolors.OKBLUE)
+    sockfd.send("(8) VOLTAR *********************************************************************************************************)\n")
+    sockfd.send(Bcolors.ENDC)
+    sockfd.send("(9) JOGAR  *********************************************************************************************************)\n")
+    sockfd.send(Bcolors.HEADER)
+    sockfd.send("(10) HELP  *********************************************************************************************************)\n")
+    sockfd.send(Bcolors.ENDC)
+    sockfd.send(LINHA)
+
+    op = int(sockfd.recv(RECV_BUFFER)[:-2])
+    if op == 1:
+        set_name(sockfd, perfil_name)
+
+    elif op == 2:
+        set_attr(sockfd, perfil_name, 35, 'patk')
+
+    elif op == 3:
+        set_attr(sockfd, perfil_name, 35, 'pdef')
+
+    elif op == 4:
+        set_attr(sockfd, perfil_name, 5, 'agility')
+
+    elif op == 5:
+        set_attr(sockfd, perfil_name, 5, 'rage')
+
+    elif op == 6:
+        set_attr(sockfd, perfil_name, 150, 'hp')
+
+    elif op == 8:
+        main_menu(sockfd, perfil_name)
+
+    elif op == 9:
+        p = Char.find_player_by_conn(sockfd)
+        Game.start_game(p)
+
+    elif op == 10:
+        help(sockfd, perfil_name)
+
+
+def help(sockfd, perfil_name):
+    TITULO = " AJUDA "
+    sockfd.send(MARGEM + Bcolors.OKBLUE + TITULO + Bcolors.ENDC + (MARGEM[:-len(TITULO)]) + "\n")
+    sockfd.send(Bcolors.WARNING)
+    sockfd.send("(1) Nome       * Define o nome do seu personagem ***********************************************)\n")
+    sockfd.send("(2) Força      * Define a foça bruta do seu golpe ****************************** MAX = 35  *****)\n")
+    sockfd.send("(3) Defesa     * Define a defesa bruta contra golpes sofridos ****************** MAX = 35  *****)\n")
+    sockfd.send("(4) Agilidade  * Melhora porcentagem de chance de desviar de golpes sofridos *** MAX = 5   *****)\n")
+    sockfd.send("(5) Raiva      * Melhora porcentagem de chance de acertar golpes fatais ******** MAX = 5   *****)\n")
+    sockfd.send("(6) Vitalidade * Define a quantidade de pontos de vida do seu personagem (HP)*** MAX = 150 *****)\n")
+    sockfd.send(Bcolors.ENDC)
+    new_char(sockfd, perfil_name)
+
+
+def multicast(p1, p2, message):
+    p1.send(message+"\n")
+    p2.send(message+"\n")
 
 
 def cavera(sockfd):
@@ -178,41 +284,44 @@ def chance(probability):
     return random.randrange(100) < probability
 
 
-def critical(probability):
-    return random.randrange(100) < probability
-
-
 def hit_pvp(p1, p2):
-    if chance(90 - p1.agility):
-        if critical(10 + p2.rage):
-            p1.hit(p2.patk, p2.name, 3)
-            if p1.is_dead():
-                print(Bcolors.FAIL + "VENCEDOR: {} HP:({})".format(p2.name, p2.hp) +Bcolors.ENDC)
+    if chance(90 - p1['char'].agility):
+        if chance(10 + p2['char'].rage):
+            multicast(p1['conn'], p2['conn'], p1['char'].hit(p2['char'].patk, p2['char'].name, 2))
+            if p1['char'].is_dead():
+                multicast(p1['conn'], p2['conn'], Bcolors.FAIL + "VENCEDOR: {} HP:({})".format(p2['char'].name, p2['char'].hp) +Bcolors.ENDC)
                 return True
         else:
-            p1.hit(p2.patk, p2.name)
-            if p1.is_dead():
-                print(Bcolors.FAIL + "VENCEDOR: {} HP:({})".format(p2.name, p2.hp) + Bcolors.ENDC)
+            multicast(p1['conn'], p2['conn'], p1['char'].hit(p2['char'].patk, p2['char'].name))
+            if p1['char'].is_dead():
+                multicast(p1['conn'], p2['conn'], Bcolors.FAIL + "VENCEDOR: {} HP:({})".format(p2['char'].name, p2['char'].hp) + Bcolors.ENDC)
                 return True
     else:
-        print(Bcolors.FAIL + "{} ERRRRRROOOUUU!!!".format(p2.name) + Bcolors.ENDC)
+        multicast(p1['conn'], p2['conn'], Bcolors.FAIL + "{} ERRRRRROOOUUU!!!".format(p2['char'].name) + Bcolors.ENDC)
+        return False
 
 
 def start_fight(p1, p2):
-    print("********************************************** INICIO *********************************************")
-    print Bcolors.OKBLUE + p1.status()
-    print Bcolors.OKGREEN + p2.status() + Bcolors.ENDC
+    multicast(p1['conn'], p2['conn'], MARGEM+" INICIO "+MARGEM)
+    multicast(p1['conn'], p2['conn'], Bcolors.OKBLUE + p1['char'].status())
+    multicast(p1['conn'], p2['conn'], Bcolors.OKGREEN + p2['char'].status() + Bcolors.ENDC)
 
-    for i in range(1, 100):
-        next = raw_input()
-        if next == 'n':
-            print("********************************************* Jogada {} *********************************************".format(i))
-            players = [p1, p2]
-            if hit_pvp(p2, p1): break
-            if hit_pvp(p1, p2): break
-            print(100 * "*")
-            print Bcolors.OKBLUE + p1.status()
-            print Bcolors.OKGREEN + p2.status() + Bcolors.ENDC
+
+def fight(p1, p2, i):
+    multicast(p1['conn'], p2['conn'], MARGEM+" Jogada {} ".format(i)+MARGEM)
+
+    if i % 2 == 0:
+        time.sleep(2)
+        if hit_pvp(p1, p2):
+            return True
+    else:
+        time.sleep(3)
+        if hit_pvp(p2, p1):
+            return True
+
+    multicast(p1['conn'], p2['conn'], LINHA)
+    multicast(p1['conn'], p2['conn'], Bcolors.OKBLUE + p1['char'].status())
+    multicast(p1['conn'], p2['conn'], Bcolors.OKGREEN + p2['char'].status() + Bcolors.ENDC)
 
 
 
@@ -227,3 +336,41 @@ def broadcast_data(sock, message, CONNECTION_LIST,  server_socket):
                 # broken socket connection may be, chat client pressed ctrl+c for example
                 socket.close()
                 CONNECTION_LIST.remove(socket)
+
+
+class Game():
+
+    players = []
+
+    @classmethod
+    def start_game(cls, p):
+
+        cls.players.append(p)
+        cls.players[0]['conn'].send("Aguarde seu oponente...")
+
+        if cls.players.__len__() >= 2:
+            cls.players[0]['conn'].send("Arena iniciada...\n")
+            cls.players[0]['conn'].send("{} x {}\n".format(cls.players[0]['char'].name, cls.players[1]['char'].name))
+            cls.players[1]['conn'].send("Arena iniciada...\n")
+            cls.players[1]['conn'].send("{} x {}\n".format(cls.players[0]['char'].name, cls.players[1]['char'].name))
+            cls.players[0]['conn'].send("Consultando Oraculo para ver quem começa...\n")
+
+            p1 = cls.players[0] if random.randint(1, 100) < 50 else cls.players[1]
+            if cls.players[0] == p1:
+                p2 = cls.players[1]
+            else:
+                p2 = cls.players[0]
+
+            cls.players[0]['conn'].send("P1:{} x P2:{}\n".format(p1['char'].name, p2['char'].name))
+            cls.players[1]['conn'].send("P1:{} x P2:{}\n".format(p1['char'].name, p2['char'].name))
+            cls.players[0]['conn'].send("P1:{} Começa....\n".format(p1['char'].name))
+            cls.players[1]['conn'].send("P1:{} Começa....\n".format(p1['char'].name))
+
+            start_fight(p1, p2)
+
+            p1['conn'].send("Voce Começa....\n")
+            p2['conn'].send("Aguarde a Jogada....\n")
+
+            for i in range(1, 50):
+                if fight(p1, p2, i):
+                    break

@@ -54,35 +54,31 @@ if __name__ == "__main__":
     while 1:
         # Get the list sockets which are ready to be read through select
         read_sockets, write_sockets, error_sockets = select.select(CONNECTION_LIST, [], [])
-
         for sock in read_sockets:
             # New connection
             if sock == server_socket:
                 sockfd, addr = server_socket.accept()
                 CONNECTION_LIST.append(sockfd)
-
                 try:
                     worker = Worker(addr, sockfd, login)
                     worker.start()
                 except Exception:
-                    pass
-            else:
-                try:
-                    data = sock.recv(1024)
-                except Exception as e:
-                    print("Execption DATA", e)
-                    data = 0
-
-                if data:
-                    print("DATA", data)  # Would append device to "devices" dictionary
-                else:
-                    sockfd.close()
-                    CONNECTION_LIST.remove(sockfd)
-                    try:
-                        player = Char.find_player_by_conn(sockfd)
-                        Char.close(player, sockfd)
-                    except IndexError:
-                        pass
-
-                    logging.info("Client Close connection by quit addr: {} socket:{}".format(addr, sockfd))
-                    print("Closed {}".format(sockfd))
+                     pass
+            # else:
+            #     try:
+            #         data = sock.recv(1024)
+            #     except Exception as e:
+            #         print("Execption DATA", e)
+            #         data = 0
+            #     if data:
+            #         print("DATA", data)  # Would append device to "devices" dictionary
+            #     else:
+            #         try:
+            #             player = Char.find_player_by_conn(sockfd)
+            #             Char.close(player, sockfd)
+            #         except IndexError:
+            #             pass
+            #         logging.info("Client Close connection by quit addr: {} socket:{}".format(addr, sockfd))
+            #         print("Closed {}".format(sockfd))
+            #         sockfd.close()
+            #         CONNECTION_LIST.remove(sockfd)
