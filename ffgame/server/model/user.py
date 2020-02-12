@@ -26,8 +26,8 @@ class Char:
     def open(cls, perfil, conn):
         char = Char(perfil)
         cls.players.append({"player": perfil, "char": char, "conn": conn})
-        logging.info('Player Login: {}'.format(perfil))
-        print(f'Connected Users {str(len(Char.players))} Last Player: {perfil}')
+        logging.info(f'Player Login: {perfil}'.encode())
+        print(f'Connected Users {str(len(Char.players))} Last Player: {perfil}'.encode())
 
     @classmethod
     def close(cls, perfil, conn):
@@ -35,7 +35,7 @@ class Char:
             if u['player'] == perfil:
                 #conn.close()
                 cls.players.remove(u)
-                logging.info("Player Logout: {}".format(perfil))
+                logging.info(f"Player Logout: {perfil}".encode())
                 break
 
     @classmethod
@@ -54,14 +54,14 @@ class Char:
         if crit:
             power = ((patk * crit) - self.pdef)
             self.hp = (self.hp - power)
-            return Bcolors.ENDC + "{} "'\033[93m'" >-----> "'\033[0m'"{} <"'\033[95m'"(-{}) "'\033[0m'"critical>".format(name,self.name, power) + Bcolors.ENDC
+            return f"{name} >-----> {self.name} < {power}".encode()
         else:
             power = (patk - self.pdef)
             self.hp = (self.hp - power)
-            return Bcolors.ENDC+"{} "'\033[92m'" >-----> "'\033[0m'"{} <"'\033[91m'"(-{}) "'\033[0m'"hit>".format(name, self.name, power) +Bcolors.ENDC
+            return f"{name} >-----> {self.name} < {power}".encode()
 
     def status(self):
-        return "{}({}):HP {}".format(self.name, self.hp, (self.hp * '#'))
+        return f"{self.name}({self.hp}):HP {self.hp * '#'}".encode()
 
     def is_dead(self):
         return self.hp <= 0

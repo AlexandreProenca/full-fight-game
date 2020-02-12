@@ -166,27 +166,27 @@ def new_char(sockfd, perfil_name):
     sockfd.send(f"Voce tem {char.char_points} pontos para distribuir entre os atributos do seu personagem, \nfique atento ao valor maximo de cada atributo\n".encode())
     sockfd.send(Bcolors.WARNING)
     sockfd.send(f"Perfil        :{char.perfil}\n".encode())
-    sockfd.send(f"(1)Nome       :{'033[91m'} {char.name}\n".encode())
+    sockfd.send(f"(1)Nome       :{char.name}\n".encode())
     sockfd.send(Bcolors.WARNING)
-    sockfd.send("(2)Força      {}:["'\033[92m'"".format(char.patk) + char.patk * 'I' + Bcolors.WARNING+"]\n".encode())
+    sockfd.send(f"(2)Força      {char.patk}\n".encode())
     sockfd.send(Bcolors.WARNING)
-    sockfd.send("(3)Defesa     {}:["'\033[92m'"".format(char.pdef) + char.pdef * 'I' + Bcolors.WARNING+"]\n".encode())
+    sockfd.send(f"(3)Defesa     {char.pdef}\n".encode())
     sockfd.send(Bcolors.WARNING)
-    sockfd.send("(4)Agilidade  0{}:["'\033[92m'"".format(char.agility) + char.agility * 'I' + Bcolors.WARNING+"]\n".encode())
+    sockfd.send(f"(4)Agilidade  {char.agility}\n".encode())
     sockfd.send(Bcolors.WARNING)
-    sockfd.send("(5)Raiva      0{}:["'\033[92m'"".format(char.rage) + char.rage * 'I' + Bcolors.WARNING+"]\n".encode())
+    sockfd.send(f"(5)Raiva      {char.rage}\n".encode())
     sockfd.send(Bcolors.WARNING)
-    sockfd.send("(6)Vitalidade {}:["'\033[92m'"".format(char.hp) + char.hp * 'I' + Bcolors.WARNING+"]\n".encode())
+    sockfd.send(f"(6)Vitalidade {char.hp}\n".encode())
     sockfd.send(Bcolors.ENDC)
-    sockfd.send(LINHA)
+    sockfd.send(LINHA.encode())
     sockfd.send(Bcolors.OKBLUE)
-    sockfd.send("(8) VOLTAR *********************************************************************************************************)\n".encode())
+    sockfd.send(f"(8) VOLTAR *********************************************************************************************************)\n".encode())
     sockfd.send(Bcolors.ENDC)
-    sockfd.send("(9) JOGAR  *********************************************************************************************************)\n".encode())
+    sockfd.send(f"(9) JOGAR  *********************************************************************************************************)\n".encode())
     sockfd.send(Bcolors.HEADER)
-    sockfd.send("(10) HELP  *********************************************************************************************************)\n".encode())
+    sockfd.send(f"(10) HELP  *********************************************************************************************************)\n".encode())
     sockfd.send(Bcolors.ENDC)
-    sockfd.send(LINHA)
+    sockfd.send(LINHA.encode())
 
     op = int(sockfd.recv(RECV_BUFFER)[:-2])
     if op == 1:
@@ -220,7 +220,7 @@ def new_char(sockfd, perfil_name):
 
 def help(sockfd, perfil_name):
     TITULO = " AJUDA "
-    sockfd.send(MARGEM + Bcolors.OKBLUE + TITULO + Bcolors.ENDC + (MARGEM[:-len(TITULO)]) + "\n".encode())
+    sockfd.send(f"{MARGEM} {Bcolors.OKBLUE} {TITULO} {Bcolors.ENDC} {MARGEM[:-len(TITULO)]} \n".encode())
     sockfd.send(Bcolors.WARNING)
     sockfd.send("(1) Nome       * Define o nome do seu personagem ***********************************************)\n".encode())
     sockfd.send("(2) Força      * Define a foça bruta do seu golpe ****************************** MAX = 35  *****)\n".encode())
@@ -233,8 +233,8 @@ def help(sockfd, perfil_name):
 
 
 def multicast(p1, p2, message):
-    p1.send(message+"\n")
-    p2.send(message+"\n")
+    p1.send(message+"\n".encode())
+    p2.send(message+"\n".encode())
 
 
 def cavera(sockfd):
@@ -347,9 +347,9 @@ class Game:
 
         if cls.players.__len__() >= 2:
             cls.players[0]['conn'].send(b"Arena iniciada...\n")
-            cls.players[0]['conn'].send(b"{} x {}\n".format(cls.players[0]['char'].name, cls.players[1]['char'].name))
+            cls.players[0]['conn'].send(f"{cls.players[0]['char'].name} X {cls.players[1]['char'].name}".encode())
             cls.players[1]['conn'].send(b"Arena iniciada...\n")
-            cls.players[1]['conn'].send(b"{} x {}\n".format(cls.players[0]['char'].name, cls.players[1]['char'].name))
+            cls.players[1]['conn'].send(f"{cls.players[0]['char'].name} X {cls.players[1]['char'].name}".encode())
             cls.players[0]['conn'].send("Consultando Oraculo para ver quem começa...\n".encode())
 
             p1 = cls.players[0] if random.randint(1, 100) < 50 else cls.players[1]
@@ -358,10 +358,10 @@ class Game:
             else:
                 p2 = cls.players[0]
 
-            cls.players[0]['conn'].send(b"P1:{} x P2:{}\n".format(p1['char'].name, p2['char'].name))
-            cls.players[1]['conn'].send(b"P1:{} x P2:{}\n".format(p1['char'].name, p2['char'].name))
-            cls.players[0]['conn'].send(b"P1:{} Comeca....\n".format(p1['char'].name))
-            cls.players[1]['conn'].send(b"P1:{} Comeca....\n".format(p1['char'].name))
+            cls.players[0]['conn'].send(f"P1:{p1['char'].name} x P2:{p2['char'].name)}\n".encode())
+            cls.players[1]['conn'].send(f"P1:{p1['char'].name} x P2:{p2['char'].name)}\n".encode())
+            cls.players[0]['conn'].send(f"P1:{p1['char'].name} Comeca....\n".encode())
+            cls.players[1]['conn'].send(f"P1:{p2['char'].name} Comeca....\n".encode())
 
             start_fight(p1, p2)
 
