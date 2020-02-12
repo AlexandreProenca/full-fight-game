@@ -27,7 +27,7 @@ class Char:
         char = Char(perfil)
         cls.players.append({"player": perfil, "char": char, "conn": conn})
         logging.info('Player Login: {}'.format(perfil))
-        print 'Connected Users (+)'+str(len(Char.players))+' Last Player: '+perfil
+        print(f'Connected Users {str(len(Char.players))} Last Player: {perfil}')
 
     @classmethod
     def close(cls, perfil, conn):

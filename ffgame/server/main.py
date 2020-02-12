@@ -40,6 +40,7 @@ if __name__ == "__main__":
 
     # List to keep track of socket descriptors
     CONNECTION_LIST = []
+    #  AF_INET adress family
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server_socket.bind((config.HOST, config.PORT))
