@@ -6,34 +6,35 @@
 """
 import logging
 import os
-import socket
 import select
-from handler.connection_handler import login
-import config
+import socket
 import threading
-from model.user import Char
+from datetime import datetime
 
-LOG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs/server.log')
+import config
+from handler.connection_handler import login
+
+LOG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs/server.log")
 
 # Log, formater and file
-logging.basicConfig(format='[%(asctime)s] - %(message)s',
-                    datefmt='%m/%d/%Y %I:%M:%S %p',
-                    filename=LOG_PATH,
-                    level=logging.INFO)
+logging.basicConfig(
+    format="[%(asctime)s] - %(message)s",
+    datefmt="%m/%d/%Y %I:%M:%S %p",
+    filename=LOG_PATH,
+    level=logging.INFO,
+)
 
 
 class Worker(threading.Thread):
-    """
-    Just run callback method
-    """
-    def __init__(self, _addr, _sockfd, _callback):
+    def __init__(self, addr, sockfd, callback):
         threading.Thread.__init__(self)
-        self.addr = _addr
-        self.sockfd = _sockfd
-        self.callback = _callback
+        self.addr = addr
+        self.sockfd = sockfd
+        self.callback = callback
 
     def run(self):
-        self.callback(self.addr, self.sockfd)
+        self.callback(self.sockfd)
+        logging.info(f"Client {self.addr} Connected at {datetime.now()}\n")
 
 
 if __name__ == "__main__":
@@ -54,7 +55,9 @@ if __name__ == "__main__":
 
     while 1:
         # Get the list sockets which are ready to be read through select
-        read_sockets, write_sockets, error_sockets = select.select(CONNECTION_LIST, [], [])
+        read_sockets, write_sockets, error_sockets = select.select(
+            CONNECTION_LIST, [], []
+        )
         for sock in read_sockets:
             # New connection
             if sock == server_socket:
@@ -64,7 +67,7 @@ if __name__ == "__main__":
                     worker = Worker(addr, sockfd, login)
                     worker.start()
                 except Exception:
-                     pass
+                    pass
             # else:
             #     try:
             #         data = sock.recv(1024)

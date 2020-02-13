@@ -1,7 +1,7 @@
 from item import Item
 
-class Weapon(Item):
 
+class Weapon(Item):
     def __init__(self):
         super(Item, self).__init__()
         self.name = name
@@ -12,4 +12,3 @@ class Weapon(Item):
 
     def unnequip(self):
         self.equipped = False
-        
