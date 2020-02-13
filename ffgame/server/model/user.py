@@ -26,16 +26,16 @@ class Char:
     def open(cls, perfil, conn):
         char = Char(perfil)
         cls.players.append({"player": perfil, "char": char, "conn": conn})
-        logging.info(f'Player Login: {perfil}'.encode())
-        print(f'Connected Users {str(len(Char.players))} Last Player: {perfil}'.encode())
+        logging.info(f'Player Login: {perfil}')
+        print(f'Connected Users {str(len(Char.players))} Last Player: {perfil}')
 
     @classmethod
     def close(cls, perfil, conn):
-        for u in cls.players:
-            if u['player'] == perfil:
+        for user in cls.players:
+            if user['player'] == perfil:
                 #conn.close()
                 cls.players.remove(u)
-                logging.info(f"Player Logout: {perfil}".encode())
+                logging.info(f"Player Logout: {perfil}")
                 break
 
     @classmethod
@@ -54,14 +54,14 @@ class Char:
         if crit:
             power = ((patk * crit) - self.pdef)
             self.hp = (self.hp - power)
-            return f"{name} >-----> {self.name} < {power}".encode()
+            return f"{name} >-----> {self.name} < {power}"
         else:
             power = (patk - self.pdef)
             self.hp = (self.hp - power)
-            return f"{name} >-----> {self.name} < {power}".encode()
+            return f"{name} >-----> {self.name} < {power}"
 
     def status(self):
-        return f"{self.name}({self.hp}):HP {self.hp * '#'}".encode()
+        return f"{self.name}({self.hp}):HP {self.hp * '#'}"
 
     def is_dead(self):
         return self.hp <= 0
