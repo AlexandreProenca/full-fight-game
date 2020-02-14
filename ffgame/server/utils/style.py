@@ -67,12 +67,12 @@ def first_menu(TITULO):
 
 def char_set_menu(char, TITULO):
     return f"""{MARGEM} {Colors.OKBLUE} {TITULO} {Colors.ENDC} {MARGEM[:-len(TITULO)]}
-    Voce tem {char.char_points} pontos para distribuir entre os atributos do seu personagem, \nfique atento ao valor maximo de cada atributo\n
+    Voce tem {char.skill_points} pontos para distribuir entre os atributos do seu personagem, \nfique atento ao valor maximo de cada atributo\n
     {Colors.WARNING}
-    Perfil           :{char.perfil}\n
+    Perfil           :{char.username}\n
     1) Nome          {char.name}{Colors.WARNING}
-    2) Força         {char.patk}{Colors.WARNING}
-    3) Defesa        {char.pdef}{Colors.WARNING}
+    2) Força         {char.p_atk}{Colors.WARNING}
+    3) Defesa        {char.p_def}{Colors.WARNING}
     4) Agilidade     {char.agility}{Colors.WARNING}
     5) Raiva         {char.rage}{Colors.WARNING}
     6) Vitalidade    {char.hp}{Colors.ENDC}

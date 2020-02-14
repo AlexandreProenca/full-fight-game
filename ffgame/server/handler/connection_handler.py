@@ -2,11 +2,11 @@
 """
  Class to manage bussines requests
 """
-import logging
 import random
 import time
 
 from model.user import Char
+from model.arena import Arena
 from utils.style import (
     LINHA,
     MARGEM,
@@ -30,14 +30,16 @@ def login(sockfd):
     send_message(welcome, sockfd)
     while True:
         send_message(name_message, sockfd)
-        name = receive_message(sockfd)
-        send_message(confirm_message(name), sockfd)
+        username = receive_message(sockfd)
+        send_message(confirm_message(username), sockfd)
         op = receive_message(sockfd)
         if op.lower() in ["sim", "s"]:
             break
-    Char.open(name, sockfd)
-    online_users(sockfd, name)
-    main_menu(sockfd, name)
+
+    char = Char(username)
+    Arena.add_user(username, sockfd, char)
+    online_users(sockfd, username)
+    main_menu(sockfd, username)
 
 
 def main_menu(sockfd, perfil_name):
@@ -62,9 +64,9 @@ def online_users(sockfd, perfil_name):
         sockfd,
     )
     send_message(Colors.OKGREEN, sockfd)
-    for user in Char.players:
-        send_message(f"Player:{user['player']}\n", sockfd)
-    send_message(f"Total:{len(Char.players)}\n", sockfd)
+    for user in Arena.players:
+        send_message(f"Player:{user}\n", sockfd)
+    send_message(f"Total:{len(Arena.players)}\n", sockfd)
     send_message(Colors.ENDC, sockfd)
     main_menu(sockfd, perfil_name)
 
@@ -86,7 +88,7 @@ def char_status(sockfd, perfil_name):
     (5)Raiva      0{char.rage}:[{char.rage * 'I'}]\n
     (6)Vitalidade {char.hp}:[{char.hp * 'I'}]\n
     {Colors.WARNING}
-    Char poins ({char.char_points} : [{char.char_points*'i'}])\n
+    Char poins ({char.skill_points} : [{char.skill_points*'i'}])\n
     {Colors.ENDC}
     """,
         sockfd,
@@ -119,7 +121,7 @@ def char(sockfd, perfil_name):
             break
 
 
-def set_name(sockfd, perfil_name):
+def set_name(sockfd, username):
     while True:
         send_message(
             "Digite o nome do seu personagem, use no maximo 50 letras, nao use espaços eu characters especiais\n",
@@ -127,16 +129,16 @@ def set_name(sockfd, perfil_name):
         )
         try:
             name = receive_message(sockfd)
-            char = Char.find_player_by_perfil_name(perfil_name)
-            char.name = name
+            player = Arena.get_user(username)
+            player['char'].name = name
             break
         except Exception as e:
             send_message(f"Invalido {e}\n", sockfd)
 
-    new_char(sockfd, perfil_name)
+    new_char(sockfd, username)
 
 
-def set_attr(sockfd, perfil_name, maximo, atributo):
+def set_attr(sockfd, username, maximo, atributo):
     while True:
         send_message(
             f"Digite o valor para a \033[92m {atributo} \033[0m do seu personagem  MAX = {maximo}\n",
@@ -144,53 +146,53 @@ def set_attr(sockfd, perfil_name, maximo, atributo):
         )
         point = int(receive_message(sockfd))
         if point <= maximo:
-            char = Char.find_player_by_perfil_name(perfil_name)
-            if char.char_points >= point:
-                char.char_points = char.char_points - point
-                setattr(char, atributo, point)
+            player = Arena.get_user(username)
+            if player['char'].skill_points >= point:
+                player['char'].skill_points -= point
+                setattr(player['char'], atributo, point)
                 break
 
             else:
-                send_message(f"Pontos insuficientes {char.char_points}\n", sockfd)
+                send_message(f"Pontos insuficientes {player['char'].skill_points}\n", sockfd)
         else:
             send_message(f"Maximo permitido {maximo}\n", sockfd)
 
-    new_char(sockfd, perfil_name)
+    new_char(sockfd, username)
 
 
-def new_char(sockfd, perfil_name):
+def new_char(sockfd, username):
     TITULO = "NOVO PERSONAGEM"
-    char = Char.find_player_by_perfil_name(perfil_name)
-    send_message(char_set_menu(char, TITULO), sockfd)
+    player = Arena.get_user(username)
+    send_message(char_set_menu(player['char'], TITULO), sockfd)
 
     op = receive_message(sockfd)
     if op == "1":
-        set_name(sockfd, perfil_name)
+        set_name(sockfd, username)
 
     elif op == "2":
-        set_attr(sockfd, perfil_name, 35, "patk")
+        set_attr(sockfd, username, 35, "p_atk")
 
     elif op == "3":
-        set_attr(sockfd, perfil_name, 35, "pdef")
+        set_attr(sockfd, username, 35, "p_def")
 
     elif op == "4":
-        set_attr(sockfd, perfil_name, 5, "agility")
+        set_attr(sockfd, username, 5, "agility")
 
     elif op == "5":
-        set_attr(sockfd, perfil_name, 5, "rage")
+        set_attr(sockfd, username, 5, "rage")
 
     elif op == "6":
-        set_attr(sockfd, perfil_name, 150, "hp")
+        set_attr(sockfd, username, 150, "hp")
 
     elif op == "8":
-        main_menu(sockfd, perfil_name)
+        main_menu(sockfd, username)
 
     elif op == "9":
-        p = Char.find_player_by_conn(sockfd)
-        Game.start_game(p)
+        player = Arena.get_user(username)
+        Game.start_game(player)
 
     elif op == "10":
-        help(sockfd, perfil_name)
+        help(sockfd, username)
 
 
 def help(sockfd, perfil_name):
@@ -207,20 +209,17 @@ def chance(probability):
     return random.randrange(100) < probability
 
 
-def hit_pvp(p1, p2):
-    if chance(90 - p1["char"].agility):
-        if chance(10 + p2["char"].rage):
-            multicast(p1, p2, p1["char"].hit(p2["char"].patk, p2["char"].name, p2['char'].rage))
-            if p1["char"].is_dead():
-                multicast(p1, p2, f"{Colors.FAIL} VENCEDOR: {p2['char'].name} HP:({p2['char'].hp}) {Colors.ENDC}\n")
+def hit_pvp(atack, defence):
+    if chance(80 - defence['char'].agility):
+            power = (atack['char'].f_hit() - defence['char'].p_def)
+            defence['char'].hp -= power
+            multicast(atack, defence, f"{atack['char'].name} --attack--> {defence['char'].name} power: {power}")
+            if defence['char'].is_dead():
+                multicast(atack, defence, f"{Colors.FAIL} VENCEDOR: {atack['char'].name} HP:({atack['char'].hp}) {Colors.ENDC}\n")
                 return True
-        else:
-            multicast(p1, p2, p1["char"].hit(p2["char"].patk, p2["char"].name))
-            if p1["char"].is_dead():
-                multicast(p1, p2, f"{Colors.FAIL} VENCEDOR: {p2['char'].name} HP:({p2['char'].hp}) {Colors.ENDC}\n")
-                return True
+            return False
     else:
-        multicast(p1, p2, f"{Colors.FAIL} {p2['char'].name} ERRRRRROOOUUU!!! {Colors.ENDC}\n")
+        multicast(atack, defence, f"{Colors.FAIL} {atack['char'].name} ERRRRRROOOUUU!!! {Colors.ENDC}\n")
         return False
 
 
@@ -267,10 +266,10 @@ class Game:
     def start_game(cls, player):
 
         cls.players.append(player)
-        send_message("Aguarde seu oponente...\n", cls.players[0]["conn"])
+        send_message("Aguarde seu oponente...\n", player['conn'])
 
         if cls.players.__len__() == 2:
-            send_message("Arena iniciada...\n", cls.players[0]["conn"])
+            send_message("Arena iniciada...\n", player['conn'])
             send_message(
                 f"{cls.players[0]['char'].name} X {cls.players[1]['char'].name}",
                 cls.players[0]["conn"],

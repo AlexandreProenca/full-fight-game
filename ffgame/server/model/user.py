@@ -1,66 +1,33 @@
-#!/usr/bin/env python
-#  -*- coding: utf-8 -*-
-"""
-Class to mantein a dict users in memory
-"""
-import logging
+import random
 
 
 class Char:
-
-    players = []
-
-    def __init__(self, perfil):
-        self.perfil = perfil
-        self.name = None
+    def __init__(self, username: str):
+        self.username = username
+        self.name = ''
         self.hp = 0
-        self.pdef = 0
-        self.patk = 0
+        self.p_def = 0
+        self.p_atk = 0
+        self.m_def = 0
+        self.m_atk = 0
         self.agility = 0
         self.rage = 0
-        self.ready = False
-        self.char_points = 150
+        self.skill_points = 150
 
-    @classmethod
-    def open(cls, perfil, conn):
-        char = Char(perfil)
-        cls.players.append({"player": perfil, "char": char, "conn": conn})
-        logging.info(f"Player Login: {perfil}")
-        print(f"Connected Users {str(len(Char.players))} Last Player: {perfil}")
+    def f_hit(self) -> int:
+        return self.p_atk + (random.randint(1, self.rage))
 
-    @classmethod
-    def close(cls, perfil, conn):
-        for user in cls.players:
-            if user["player"] == perfil:
-                # conn.close()
-                cls.players.remove(u)
-                logging.info(f"Player Logout: {perfil}")
-                break
+    def m_speel(self) -> int:
+        return self.m_atk + (random.randint(1, self.rage))
 
-    @classmethod
-    def find_player_by_perfil_name(cls, perfil_name):
-        return [p["char"] for p in cls.players if p["player"] == perfil_name][0]
+    def f_defence(self) -> int:
+        return self.p_def
 
-    @classmethod
-    def find_conn_by_perfil_name(cls, perfil_name):
-        return [p["conn"] for p in cls.players if p["player"] == perfil_name][0]
+    def m_defence(self) -> int:
+        return self.m_def
 
-    @classmethod
-    def find_player_by_conn(cls, conn):
-        return [p for p in cls.players if p["conn"] == conn][0]
-
-    def hit(self, patk, name, crit=None):
-        if crit:
-            power = (patk * crit) - self.pdef
-            self.hp = self.hp - power
-            return f"{name} >-----> {self.name} < {power}\n"
-        else:
-            power = patk - self.pdef
-            self.hp = self.hp - power
-            return f"{name} >-----> {self.name} < {power}\n"
-
-    def status(self):
+    def status(self) -> str:
         return f"{self.name}({self.hp}):HP {self.hp * '#'}\n"
 
-    def is_dead(self):
+    def is_dead(self) -> bool:
         return self.hp <= 0
